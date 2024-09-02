@@ -1,55 +1,60 @@
-from flask import Flask
 from flask import Blueprint, jsonify, request
-from .models import Order, OrderItem, db, Customer
+from .models import Order, OrderItem, db, Customer, Product
 from marshmallow import Schema, fields, ValidationError, post_load
 from datetime import datetime
 
 orders_bp = Blueprint('orders', __name__)
 
-app = Flask(__name__)
-@app.route('/')
-def home():
-    return "Welcome to the E-commerce API"
-
 class OrderSchema(Schema):
-    id = fields.Int(dump_only=True)  
     customer_id = fields.Int(required=True)
-    order_date = fields.DateTime(dump_only=True)
-    items = fields.Nested('OrderItemSchema', many=True)
+    status = fields.Str(required=True)
+    order_date = fields.DateTime(required=True)
+    customer = fields.Nested('CustomerSchema', only=['id', 'name'])
+    items = fields.Nested('OrderItemSchema', many=True, exclude=['order'])
 
-    @post_load
-    def make_order(self, data, **kwargs):
-        return Order(**data)
-
-class OrderItemSchema(Schema):
-    id = fields.Int(dump_only=True)
-    order_id = fields.Int(dump_only=True)
-    product_id = fields.Int(required=True)
-    quantity = fields.Int(required=True)
-
-    @post_load
-    def make_order_item(self, data, **kwargs):
-        return OrderItem(**data)
-
-# Get all orders for specific customer
+    
+# Get all orders for a customer
 @orders_bp.route('/customers/<int:customer_id>/orders', methods=['GET'])
 def get_customer_orders(customer_id):
-    customer = Customer.query.get_or_404(customer_id)  # does customer exists
+    customer = Customer.query.get_or_404(customer_id) 
     orders = customer.orders
     schema = OrderSchema(many=True)
     return jsonify(schema.dump(orders))
 
-# Cancel an order
+# Cancel order
 @orders_bp.route('/orders/<int:order_id>/cancel', methods=['PUT'])
 def cancel_order(order_id):
     order = Order.query.get_or_404(order_id)
 
-    # can it be cancelled or not
-    if order.order_date < datetime.now(): 
+    # Check if order can be canceled
+    if order.order_date < datetime.now():  
         return jsonify({"error": "Cannot cancel order, it's already in the past"}), 400
 
-    # Mark order as canceled 
-    order.status = 'canceled' 
+    # Mark canceled 
+    order.status = 'canceled'  
     db.session.commit()
 
     return jsonify({"message": "Order canceled successfully"})
+
+# total price of an order
+@orders_bp.route('/orders/<int:order_id>/total', methods=['GET'])
+def get_order_total(order_id):
+    order = Order.query.get_or_404(order_id)
+    total_price = 0
+    for item in order.items:
+        total_price += item.product.price * item.quantity
+    return jsonify({"total_price": total_price})
+
+# Restock a product 
+@orders_bp.route('/products/<int:product_id>/restock', methods=['PUT'])
+def restock_product(product_id):
+    product = Product.query.get_or_404(product_id)
+    try:
+        quantity = int(request.json.get('quantity'))
+        if quantity <= 0:
+            raise ValueError("Restock quantity must be positive")
+        product.stock_level += quantity
+        db.session.commit()
+        return jsonify({"message": f"Product {product.name} restocked successfully"})
+    except (KeyError, ValueError) as e:
+        return jsonify({"error": str(e)}), 400
