@@ -3,8 +3,6 @@ from app import Order, OrderItem, db, Customer, Product
 from marshmallow import Schema, fields
 from datetime import datetime
 
-orders_bp = Blueprint('orders', __name__)
-
 class OrderSchema(Schema):
     customer_id = fields.Int(required=True)
     status = fields.Str(required=True)
@@ -12,8 +10,9 @@ class OrderSchema(Schema):
     customer = fields.Nested('CustomerSchema', only=['id', 'name'])
     items = fields.Nested('OrderItemSchema', many=True, exclude=['order'])
 
-    
-# Get all orders for a customer
+orders_bp = Blueprint('orders', __name__)
+
+# Get all orders
 @orders_bp.route('/customers/<int:customer_id>/orders', methods=['GET'])
 def get_customer_orders(customer_id):
     customer = Customer.query.get_or_404(customer_id) 
@@ -58,3 +57,4 @@ def restock_product(product_id):
         return jsonify({"message": f"Product {product.name} restocked successfully"})
     except (KeyError, ValueError) as e:
         return jsonify({"error": str(e)}), 400
+    

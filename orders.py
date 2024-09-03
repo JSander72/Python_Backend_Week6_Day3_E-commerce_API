@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask import Blueprint
-from ..app import db
+from flask import Blueprint, Config
+# from ..app import db
 from app import db
 from marshmallow import Schema, fields
 

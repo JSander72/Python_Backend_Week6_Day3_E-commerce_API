@@ -5,7 +5,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.declarative import declarative_base
 from flask import Blueprint
 from marshmallow import Schema, fields
-from ..app import db
+# from ..app import db
+from app import db
 
 app = Flask(__name__)
 Base = declarative_base()

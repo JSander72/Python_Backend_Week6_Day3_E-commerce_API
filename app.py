@@ -1,17 +1,34 @@
-from flask import Flask
-from flask_marshmallow import Marshmallow
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask import Blueprint, jsonify, request
-from marshmallow import Schema, fields, ValidationError
-import mysql.connector
-from routes.customer import Customer
+import os
+print(os.getcwd())
+import sys
+print(sys.path)
 
+from flask import Config, Flask, Blueprint, jsonify, request
+from flask_marshmallow import Marshmallow
+from flask_sqlalchemy import SQLAlchemy
+from marshmallow import Schema, fields, ValidationError
+import mysql.connector 
+
+# Define Flask app and SQLAlchemy
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:12wsxdr56@localhost:3306/eCommerce'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
+db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
-class Config:
-    SQLALCHEMY_DATABASE_URI ='mysql://root:12wsxdr56@localhost:3306/eCommerce'
+# Define schemas
+class MemberSchema(ma.Schema):
+    class Meta:
+        fields = ('customer', 'order', 'product', 'bonus')
+
+class CustomerSchema(Schema):
+    name = fields.Str(required=True)
+    email = fields.Email(required=True)
+    phone = fields.Str()
+
+from customer import Customer
+
+customers_bp = Blueprint('customers', __name__)
 
 def get_db_connection():
     connection = mysql.connector.connect(
@@ -26,53 +43,33 @@ def get_db_connection():
 with get_db_connection() as conn:
     print("Database connected successfully!")
 
-if __name__ == "__main__":
-    app.run(debug=True)
-
-class MemberSchema(ma.Schema):
-    class Meta:
-        fields = ('customer', 'order', 'product', 'bonus')
-
 member_schema = MemberSchema()
 members_schema = MemberSchema(many=True)
 
-
 app.config.from_object(Config)
-db = SQLAlchemy(app)
 
-
-customers_bp = Blueprint('customers', __name__)
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI']='mysql://root:12wsxdr56@localhost:3306/eCommerce'
-
-db = SQLAlchemy(app)
-
-# Create an instance of the Flask class
 @app.route('/')
 def home():
     return "Welcome to the E-commerce API"
 
-# Schema for validation
 class CustomerSchema(Schema):
     name = fields.Str(required=True)
     email = fields.Email(required=True)
     phone = fields.Str()
 
-# Get all customers
 @customers_bp.route('/customers', methods=['GET'])
 def get_customers():
     customers = Customer.query.all()
     schema = CustomerSchema(many=True)
     return jsonify(schema.dump(customers))
 
-# Get a single customer by ID
 @customers_bp.route('/customers/<int:customer_id>', methods=['GET'])
 def get_customer(customer_id):
     customer = Customer.query.get_or_404(customer_id)
     schema = CustomerSchema()
     return jsonify(schema.dump(customer))
 
-# Create a new customer
+# Create customer
 @customers_bp.route('/customers', methods=['POST'])
 def create_customer():
     try:
@@ -85,7 +82,7 @@ def create_customer():
     except ValidationError as err:
         return jsonify(err.messages), 400
 
-# Update an existing customer
+# Update customer
 @customers_bp.route('/customers/<int:customer_id>', methods=['PUT'])
 def update_customer(customer_id):
     customer = Customer.query.get_or_404(customer_id)
@@ -99,10 +96,14 @@ def update_customer(customer_id):
     except ValidationError as err:
         return jsonify(err.messages), 400
 
-# Delete a customer
+# Delete customer
 @customers_bp.route('/customers/<int:customer_id>', methods=['DELETE'])
 def delete_customer(customer_id):
     customer = Customer.query.get_or_404(customer_id)
     db.session.delete(customer)
     db.session.commit()
     return '', 204
+
+if __name__ == "__main__":
+    app.run(debug=True)
+

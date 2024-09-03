@@ -1,14 +1,10 @@
-from flask import Flask
+from flask import Config, Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask import Blueprint
-from ..app import db
+import MySQLdb 
 
 
-customers_bp = Blueprint('customers', __name__)
-app = Flask(__name__)
-db = SQLAlchemy()
-
-class Customer(db.Model):
+class Customer(db.Model): 
     __tablename__ = 'customers'  
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -19,7 +15,7 @@ class Customer(db.Model):
 
     def __repr__(self):
         return f'<Customer {self.name}>'
-    
+
 class CustomerAccount(db.Model):
     __tablename__ = 'customer_accounts'
     id = db.Column(db.Integer, primary_key=True)
@@ -29,4 +25,20 @@ class CustomerAccount(db.Model):
 
     def __repr__(self):
         return f'<CustomerAccount {self.username}>'
+
+customers_bp = Blueprint('customers', __name__)
+app = Flask(__name__)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:12wsxdr56@localhost:3306/eCommerce'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
+
+db = SQLAlchemy(app)  
+
+
+from app import db 
+
+if __name__ == '__main__':
+    with app.app_context(): 
+        db.create_all()  
+    app.run(debug=True)
 
