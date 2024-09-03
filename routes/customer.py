@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask import Blueprint, jsonify, request
-from ..models import db
+from flask import Blueprint
+from ..app import db
 
 
 customers_bp = Blueprint('customers', __name__)

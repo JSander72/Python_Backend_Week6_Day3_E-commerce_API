@@ -1,16 +1,18 @@
+
+from flask_marshmallow import Marshmallow 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.declarative import declarative_base
-from flask_marshmallow import Marshmallow 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint
 from marshmallow import Schema, fields
+from ..app import db
 
 app = Flask(__name__)
 Base = declarative_base()
 
+app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///products.db'
 db = SQLAlchemy(app, model_class= Base)
 ma = Marshmallow(app)
-
 products_bp = Blueprint('products', __name__)
 
 class ProductSchema(Schema):
@@ -18,7 +20,7 @@ class ProductSchema(Schema):
     price = fields.Float(required=True)
     stock_level = fields.Int(required=True)
 
-db = SQLAlchemy()
+# db = SQLAlchemy()
 
 class Product(db.Model):
     __tablename__ = 'products'

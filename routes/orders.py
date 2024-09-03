@@ -1,8 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask import Blueprint, jsonify, request
-from ..models import Order, OrderItem, db
+from flask import Blueprint
+from ..app import db
+from app import db
 from marshmallow import Schema, fields
 
+
+db = SQLAlchemy()
 orders_bp = Blueprint('orders', __name__)
 
 class OrderSchema(Schema):
@@ -13,7 +16,7 @@ class OrderItemSchema(Schema):
     product_id = fields.Int(required=True)
     quantity = fields.Int(required=True)
 
-db = SQLAlchemy()
+
 
 
 class Order(db.Model):

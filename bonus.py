@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-from .models import Order, OrderItem, db, Customer, Product
-from marshmallow import Schema, fields, ValidationError, post_load
+from app import Order, OrderItem, db, Customer, Product
+from marshmallow import Schema, fields
 from datetime import datetime
 
 orders_bp = Blueprint('orders', __name__)
