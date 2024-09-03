@@ -22,3 +22,6 @@ Python 3.8+
 Flask
 Flask-SQLAlchemy
 MySQL Server
+mysqlclient
+marshmallow-sqlalchemy
+mysql-connector-python
