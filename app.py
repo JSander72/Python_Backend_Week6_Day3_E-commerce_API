@@ -8,6 +8,7 @@ from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import Schema, fields, ValidationError
 import mysql.connector 
+from sqlalchemy.ext.declarative import declarative_base
 
 
 

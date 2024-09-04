@@ -2,7 +2,7 @@ from flask import Config, Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask import Blueprint, jsonify
 from marshmallow import Schema, fields, ValidationError
-
+from sqlalchemy.ext.declarative import declarative_base
 
 
 

@@ -1,8 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask import Blueprint, jsonify
+from flask import Blueprint, app, jsonify
 from app import db
 from marshmallow import Schema, fields, ValidationError
-
+from sqlalchemy.ext.declarative import declarative_base
 
 db = SQLAlchemy()
 orders_bp = Blueprint('orders', __name__)
@@ -52,3 +52,8 @@ def get_order(order_id):
     order = Order.query.get_or_404(order_id)
     schema = OrderSchema()
     return jsonify(schema.dump(order))
+
+if __name__ == '__main__':
+    with app.app_context(): 
+        db.create_all()  
+    app.run(debug=True)

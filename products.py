@@ -45,3 +45,9 @@ def get_product(product_id):
     product = Product.query.get_or_404(product_id)
     schema = ProductSchema()
     return jsonify(schema.dump(product))
+
+if __name__ == '__main__':
+    with app.app_context(): 
+        db.create_all()  
+    app.run(debug=True)
+    
