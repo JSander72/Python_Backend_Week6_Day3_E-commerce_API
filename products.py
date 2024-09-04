@@ -3,9 +3,8 @@ from flask_marshmallow import Marshmallow
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.declarative import declarative_base
-from flask import Blueprint
-from marshmallow import Schema, fields
-# from ..app import db
+from flask import Blueprint, jsonify
+from marshmallow import Schema, fields, ValidationError
 from app import db
 
 app = Flask(__name__)
@@ -31,4 +30,18 @@ class Product(db.Model):
     stock_level = db.Column(db.Integer, nullable=False)
     order_items = db.relationship('OrderItem', backref='product', lazy=True)
     def __repr__(self):
-        return f'<Product {self.name}>'
+        return f'<Product {self.name}>'    
+
+# Product Routes
+@products_bp.route('/products', methods=['GET'])
+def get_products():
+    products = Product.query.all()
+    schema = ProductSchema(many=True)
+    return jsonify(schema.dump(products))
+
+
+@products_bp.route('/products/<int:product_id>', methods=['GET'])
+def get_product(product_id):
+    product = Product.query.get_or_404(product_id)
+    schema = ProductSchema()
+    return jsonify(schema.dump(product))

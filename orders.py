@@ -1,8 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask import Blueprint, Config
-# from ..app import db
+from flask import Blueprint, jsonify
 from app import db
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, ValidationError
 
 
 db = SQLAlchemy()
@@ -15,9 +14,6 @@ class OrderItemSchema(Schema):
     order_id = fields.Int(required=True)
     product_id = fields.Int(required=True)
     quantity = fields.Int(required=True)
-
-
-
 
 class Order(db.Model):
     __tablename__ = 'orders'
@@ -36,3 +32,23 @@ class OrderItem(db.Model):
     quantity = db.Column(db.Integer, nullable=False) 
     def __repr__(self):
         return f'<OrderItem {self.id}>'
+    
+# Order Schema
+class OrderSchema(Schema):
+    customer_id = fields.Int(required=True)
+    product_id = fields.Int(required=True)
+    quantity = fields.Int(required=True)
+    order_date = fields.DateTime()
+
+# Order Routes
+@orders_bp.route('/orders', methods=['GET'])
+def get_orders():
+    orders = Order.query.all()
+    schema = OrderSchema(many=True)
+    return jsonify(schema.dump(orders))
+
+@orders_bp.route('/orders/<int:order_id>', methods=['GET'])
+def get_order(order_id):
+    order = Order.query.get_or_404(order_id)
+    schema = OrderSchema()
+    return jsonify(schema.dump(order))
