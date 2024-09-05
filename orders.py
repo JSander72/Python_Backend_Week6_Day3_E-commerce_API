@@ -40,19 +40,6 @@ class OrderSchema(Schema):
     quantity = fields.Int(required=True)
     order_date = fields.DateTime()
 
-# Order Routes
-@orders_bp.route('/orders', methods=['GET'])
-def get_orders():
-    orders = Order.query.all()
-    schema = OrderSchema(many=True)
-    return jsonify(schema.dump(orders))
-
-@orders_bp.route('/orders/<int:order_id>', methods=['GET'])
-def get_order(order_id):
-    order = Order.query.get_or_404(order_id)
-    schema = OrderSchema()
-    return jsonify(schema.dump(order))
-
 if __name__ == '__main__':
     with app.app_context(): 
         db.create_all()  

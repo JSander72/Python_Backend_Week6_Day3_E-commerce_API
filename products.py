@@ -32,19 +32,6 @@ class Product(db.Model):
     def __repr__(self):
         return f'<Product {self.name}>'    
 
-# Product Routes
-@products_bp.route('/products', methods=['GET'])
-def get_products():
-    products = Product.query.all()
-    schema = ProductSchema(many=True)
-    return jsonify(schema.dump(products))
-
-
-@products_bp.route('/products/<int:product_id>', methods=['GET'])
-def get_product(product_id):
-    product = Product.query.get_or_404(product_id)
-    schema = ProductSchema()
-    return jsonify(schema.dump(product))
 
 if __name__ == '__main__':
     with app.app_context(): 
